@@ -1,13 +1,13 @@
 import {Logger} from './logger.js';
 
-export function newDialog({user=``,title=``,content=``}={}, skipDialog = false)
+export function newDialog(user=``,title=``,content=``, skipDialog = false, emit = true)
 {
-  if(user = `` && skipDialog && !game.users.filter(u=>u.active && !u.isGM && u.id === user))
+  if(user === `` && skipDialog && !game.users.filter(u=>u.active && !u.isGM && u.id === user))
     return ui.notifications.error(`Cannot send dialog to null user.`);
-    
-  if(title = ``) title = `Send Whisper Dialog`;
 
-  if(content = ``)
+  if(title === ``) title = `Send Whisper Dialog`;
+
+  if(content === ``)
   {
     let connected_users = game.users.filter(u=>u.active && !u.isGM).map(u=>`${u.id}.${u.name}`);
     
@@ -25,7 +25,7 @@ export function newDialog({user=``,title=``,content=``}={}, skipDialog = false)
           <tr>
             <th>Choose User</th>
             <th>
-              <select id="user">
+              <select name="user">
                 ${user_content}
               </select>
             <th>
@@ -44,8 +44,12 @@ export function newDialog({user=``,title=``,content=``}={}, skipDialog = false)
       </div>`;
   }
 
-  if(skipDialog)
+  Logger.debug(`Dialog | Variable Check | `, user, title, content, skipDialog);
+
+  if(!skipDialog)
   {
+    Logger.debug(`Dialog | Inside Skip Dialog `);    
+
     new Dialog({
       title : title,
       content : content,
@@ -54,12 +58,17 @@ export function newDialog({user=``,title=``,content=``}={}, skipDialog = false)
           icon : ``,
           label : `Ok`,
           callback : (html) => { 
-            let data = {
-              user : html.find('[name=user]')[0].value,
-              title : html.find('[name=title]')[0].value,
-              content : html.find('[name=content]')[0].value
-            }
-            game.socket.emit(`module.whisper-dialog`, {data : data});
+            Logger.debug(html);
+
+            if(emit)
+            {
+              let data = {
+                user : html.find('[name=user]')[0].value,
+                title : html.find('[name=title]')[0].value,
+                content : html.find('[name=content]')[0].value
+              }
+              game.socket.emit(`module.whisper-dialog`, {data : data});
+            }              
           }
         },
         Cancel : {
@@ -71,15 +80,24 @@ export function newDialog({user=``,title=``,content=``}={}, skipDialog = false)
     }).render(true);
   }else{
     let data = {
-      user : html.find('[name=user]')[0].value,
-      title : html.find('[name=title]')[0].value,
-      content : html.find('[name=content]')[0].value
+      user : user,
+      title : title,
+      content : content
     }
-    game.socket.emit(`module.whisper-dialog`, {data : data});
+    if(emit)
+      game.socket.emit(`module.whisper-dialog`, {data : data});
   }
 }
 
 export function recieveData(data)
 {
   Logger.debug(`Dialog | Receive Data | `, data);
+
+  Logger.debug(`Dialog | Recieve Data | `, game.userId, data.data.user, game.userId === data.data.user);
+
+  if(game.userId == data.data.user)
+  {
+    Logger.debug(`Dialog | Receive data | Conditional Statment TRUE`);
+    newDialog(``,data.data.title,data.data.content,false,false); 
+  }
 }

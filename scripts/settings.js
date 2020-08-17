@@ -13,7 +13,7 @@ function Logger_Settings()
     hint : "",
     scope :"world",
     config : false,
-    default : true,
+    default : false,
     type : Boolean
   });
 }
