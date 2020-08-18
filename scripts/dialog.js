@@ -10,6 +10,8 @@ export function newDialog(user=``,content=``, title=``, skipDialog = false, emit
   if(content === ``)
   {
     let connected_users = game.users.filter(u=>u.active && u.id !== game.userId).map(u=>`${u.id}.${u.name}`);
+
+    if(connected_users.length === 0) return ui.notifications.warn(`${i18n("wd.dialog.noUserError")}`);
     
     let user_content = ``;
 
