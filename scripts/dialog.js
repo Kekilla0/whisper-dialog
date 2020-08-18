@@ -8,7 +8,7 @@ export function newDialog(user=``,content=``, title=``, skipDialog = false, emit
   if(user !==  `` && game.users.filter(u=>u.active && u.id === user).length === 0)
     return ui.notifications.error(`${i18n("wd.dialog.nullUserError")} : ${user}`);
 
-  if(title === ``) title = `${i18n("wd.dialog.defaultTitle")}`;
+  if(title === ``) title = `${i18n("wd.log.name")}`;
 
   if(content === ``)
   {
@@ -26,9 +26,18 @@ export function newDialog(user=``,content=``, title=``, skipDialog = false, emit
 
     content = `
       <div class="form-group">
-        ${i18n("wd.dialog.content.chooseUser")}
-        <select name="user">${user_content}</select>
-        <hr />
+        <div style="display:flex; justify-content:space-between">
+          <div>
+            ${i18n("wd.dialog.content.chooseUser")} 
+            <select name="user">${user_content}</select>
+          </div>
+          <div>
+            <label>
+              <div style="display:inline-block;vertical-align:middle"><input type="checkbox" name="chatLog"/></div>
+              <div style="display:inline-block;vertical-align:middle">${i18n("wd.dialog.content.chatWhisper")}</div>
+            </label>
+          </div>
+        </div>
 
         ${i18n("wd.dialog.content.message")} <textarea name="content" rows="5"></textarea>
       </div>
@@ -47,13 +56,20 @@ export function newDialog(user=``,content=``, title=``, skipDialog = false, emit
         if(emit)
         {
           if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(`${i18n("wd.dialog.notGMError")}`);
+          const user = html.find('[name=user]')[0].value;
+          const content = html.find('[name=content]')[0].value;
           let data = {
-            user : html.find('[name=user]')[0].value,
-            title : title,
-            content : html.find('[name=content]')[0].value,
+            user,
+            title,
+            content,
             sender : game.userId
           }
           game.socket.emit(`module.whisper-dialog`, {data});
+
+          if (html.find('[name=chatLog]')[0].checked)
+          {
+            ChatMessage.create({ content, whisper: [user] });
+          }
         }              
       }
     },
@@ -74,14 +90,14 @@ export function newDialog(user=``,content=``, title=``, skipDialog = false, emit
     }).render(true);
   }else{
     let data = {
-      user : user,
-      title : title,
-      content : content
+      user,
+      title,
+      content
     }
     if(emit)
     {
       if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(`${i18n("wd.dialog.notGMError")}`);
-      game.socket.emit(`module.whisper-dialog`, {data : data});
+      game.socket.emit(`module.whisper-dialog`, {data});
     }
   }
 }
@@ -94,7 +110,7 @@ export function recieveData({data : { user, title, content, sender }})
   if(game.userId == user)
   {
     Logger.debug(`Dialog | Receive data | Conditional Statment TRUE`);
-    newDialog(``,fixedContent,`${title}, ${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===sender).name}`,false,false,true); 
+    newDialog(``,fixedContent,`${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===sender).name}: ${i18n("wd.dialog.defaultTitle")}`,false,false,true);
   }
 }
 

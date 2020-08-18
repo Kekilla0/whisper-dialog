@@ -12,10 +12,11 @@
   "wd.dialog.defaultTitle" : "For your eyes only.",
 
   "wd.dialog.content.chooseUser" : "Choose User:",
+  "wd.dialog.content.chatWhisper" : "Log to chat",
   "wd.dialog.content.message" : "Message:",
 
   "wd.dialog.button.ok" : "Ok",
   "wd.dialog.button.cancel" : "Cancel",
 
-  "wd.dialog.recieve.sentFrom" : "sent from"
+  "wd.dialog.recieve.sentFrom" : "From"
 }
