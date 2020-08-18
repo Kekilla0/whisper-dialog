@@ -11,16 +11,16 @@ Once activated in the module menu, you may use the Macro syntax to send messages
 
 Default Use
 WhisperDialog.newDialog();
+
 ![In Action](https://i.gyazo.com/89ea3a782c46e1da89a5351e44987d6c.gif)
 
 Advanced Use
-WhisperDialog.newDialog({
-  user : `USER ID TO SEND WHISPER DIALOG TO`,
-  content : `CONTENT OF THE DIALOG`,
-  title : `TITLE OF THE DIALOG`,
-  skipDialog : true/false, //will skip Client Dialog, automatically pushing information to user
-  chatWhisper : true/false //will send a whisper as well as a whisper dialog to the user, mirrors check box in Client Dialog
-});
+1. user : `USER ID TO SEND WHISPER DIALOG TO`,
+2. content : `CONTENT OF THE DIALOG`,
+3. title : `TITLE OF THE DIALOG`,
+4. skipDialog : true/false, //will skip Client Dialog, automatically pushing information to user
+5. chatWhisper : true/false //will send a whisper as well as a whisper dialog to the user, mirrors check box in Client Dialog
+
 ![In Action](https://i.gyazo.com/546475532d233ba3f4c3a08bda38c348.gif)
 
 # Support
