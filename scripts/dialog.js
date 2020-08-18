@@ -1,6 +1,6 @@
 import {Logger} from './logger.js';
 
-export function newDialog(user=``,title=``,content=``, skipDialog = false, emit = true)
+export function newDialog(user=``,title=``,content=``, skipDialog = false, emit = true, hideButtons = false)
 {
   if(user === `` && skipDialog && !game.users.filter(u=>u.active && !u.isGM && u.id === user))
     return ui.notifications.error(`Cannot send dialog to null user.`);
@@ -21,62 +21,49 @@ export function newDialog(user=``,title=``,content=``, skipDialog = false, emit 
 
     content = `
       <div class="form-group">
-        <table>
-          <tr>
-            <th>Choose User</th>
-            <th>
-              <select name="user">
-                ${user_content}
-              </select>
-            <th>
-          </tr>
-          <tr>
-            <td colspan="2">
-              <input name="title" type="text">
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2" rowspan"10">
-              <input name="content" type="text">
-            </td>
-          </tr>
-        <table>
-      </div>`;
+        Choose User: 
+        <select name="user">${user_content}</select>
+        <hr />
+
+        Message: <textarea name="content" rows="5"></textarea>
+      </div>
+        `;
   }
 
   Logger.debug(`Dialog | Variable Check | `, user, title, content, skipDialog);
 
+  const senderButtons = {
+    Ok : {
+      icon : ``,
+      label : `Ok`,
+      callback : (html) => { 
+        Logger.debug(html);
+
+        if(emit)
+        {
+          let data = {
+            user : html.find('[name=user]')[0].value,
+            title : 'For your eyes only',
+            content : html.find('[name=content]')[0].value
+          }
+          game.socket.emit(`module.whisper-dialog`, {data});
+        }              
+      }
+    },
+    Cancel : {
+      icon : ``,
+      label : `Cancel`,
+    }
+  };
+
   if(!skipDialog)
   {
-    Logger.debug(`Dialog | Inside Skip Dialog `);    
+    Logger.debug(`Dialog | Inside Skip Dialog `);  
 
     new Dialog({
-      title : title,
-      content : content,
-      buttons : {
-        Ok : {
-          icon : ``,
-          label : `Ok`,
-          callback : (html) => { 
-            Logger.debug(html);
-
-            if(emit)
-            {
-              let data = {
-                user : html.find('[name=user]')[0].value,
-                title : html.find('[name=title]')[0].value,
-                content : html.find('[name=content]')[0].value
-              }
-              game.socket.emit(`module.whisper-dialog`, {data : data});
-            }              
-          }
-        },
-        Cancel : {
-          icon : ``,
-          label : `Cancel`,
-        }
-      },
-      default : `Cancel`
+      title,
+      content,
+      buttons : hideButtons ? {} : senderButtons
     }).render(true);
   }else{
     let data = {
@@ -89,15 +76,14 @@ export function newDialog(user=``,title=``,content=``, skipDialog = false, emit 
   }
 }
 
-export function recieveData(data)
+export function recieveData({data : { user, title, content }})
 {
-  Logger.debug(`Dialog | Receive Data | `, data);
+  Logger.debug(`Dialog | Recieve Data | `, game.userId, user, game.userId === user);
+  const fixedContent = `<h3>${content.replace(/(?:\r\n|\r|\n)/g, '<br>')}</h3>`;
 
-  Logger.debug(`Dialog | Recieve Data | `, game.userId, data.data.user, game.userId === data.data.user);
-
-  if(game.userId == data.data.user)
+  if(game.userId == user)
   {
     Logger.debug(`Dialog | Receive data | Conditional Statment TRUE`);
-    newDialog(``,data.data.title,data.data.content,false,false); 
+    newDialog(``,title,fixedContent,false,false,true); 
   }
 }
