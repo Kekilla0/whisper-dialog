@@ -1,3 +1,13 @@
 {
-  
+  "wd.log.name" : "Whisper Dialog",
+  "wd.log.debug" : "DEBUG",
+
+  "wd.dialog.nullUserError" : "Cannot send dialog to null user",
+  "wd.dialog.defaultTitle" : "For your eyes only.",
+  "wd.dialog.content.chooseUser" : "Choose User:",
+  "wd.dialog.content.message" : "Message:",
+  "wd.dialog.button.ok" : "Ok",
+  "wd.dialog.button.cancel" : "Cancel",
+
+  "wd.dialog.recieve.sentFrom" : "sent from"
 }

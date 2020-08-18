@@ -1,15 +1,15 @@
 import {Logger} from './logger.js';
 
-export function newDialog(user=``,title=``,content=``, skipDialog = false, emit = true, hideButtons = false)
+export function newDialog(user=``,content=``, title=``, skipDialog = false, emit = true, hideButtons = false)
 {
-  if(user === `` && skipDialog && !game.users.filter(u=>u.active && !u.isGM && u.id === user))
-    return ui.notifications.error(`Cannot send dialog to null user.`);
+  if(user === `` && skipDialog && !game.users.filter(u=>u.active && u.id === user))
+    return ui.notifications.error(`${i18n("wd.dialog.nullUserError")} : ${user}`);
 
-  if(title === ``) title = `Send Whisper Dialog`;
+  if(title === ``) title = `${i18n("wd.dialog.defaultTitle")}`;
 
   if(content === ``)
   {
-    let connected_users = game.users.filter(u=>u.active && !u.isGM).map(u=>`${u.id}.${u.name}`);
+    let connected_users = game.users.filter(u=>u.active && u.id !== game.userId).map(u=>`${u.id}.${u.name}`);
     
     let user_content = ``;
 
@@ -21,11 +21,11 @@ export function newDialog(user=``,title=``,content=``, skipDialog = false, emit 
 
     content = `
       <div class="form-group">
-        Choose User: 
+        ${i18n("wd.dialog.content.chooseUser")}
         <select name="user">${user_content}</select>
         <hr />
 
-        Message: <textarea name="content" rows="5"></textarea>
+        ${i18n("wd.dialog.content.message")} <textarea name="content" rows="5"></textarea>
       </div>
         `;
   }
@@ -34,8 +34,8 @@ export function newDialog(user=``,title=``,content=``, skipDialog = false, emit 
 
   const senderButtons = {
     Ok : {
-      icon : ``,
-      label : `Ok`,
+      icon : `<i class="fas fa-check"></i>`,
+      label : `${i18n("wd.dialog.button.ok")}`,
       callback : (html) => { 
         Logger.debug(html);
 
@@ -43,16 +43,17 @@ export function newDialog(user=``,title=``,content=``, skipDialog = false, emit 
         {
           let data = {
             user : html.find('[name=user]')[0].value,
-            title : 'For your eyes only',
-            content : html.find('[name=content]')[0].value
+            title : title,
+            content : html.find('[name=content]')[0].value,
+            sender : game.userId
           }
           game.socket.emit(`module.whisper-dialog`, {data});
         }              
       }
     },
     Cancel : {
-      icon : ``,
-      label : `Cancel`,
+      icon : `<i class="fas fa-ban"></i>`,
+      label : `${i18n("wd.dialog.button.cancel")}`,
     }
   };
 
@@ -76,7 +77,7 @@ export function newDialog(user=``,title=``,content=``, skipDialog = false, emit 
   }
 }
 
-export function recieveData({data : { user, title, content }})
+export function recieveData({data : { user, title, content, sender }})
 {
   Logger.debug(`Dialog | Recieve Data | `, game.userId, user, game.userId === user);
   const fixedContent = `<h3>${content.replace(/(?:\r\n|\r|\n)/g, '<br>')}</h3>`;
@@ -84,6 +85,11 @@ export function recieveData({data : { user, title, content }})
   if(game.userId == user)
   {
     Logger.debug(`Dialog | Receive data | Conditional Statment TRUE`);
-    newDialog(``,title,fixedContent,false,false,true); 
+    newDialog(``,fixedContent,`${title}, ${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===sender).name}`,false,false,true); 
   }
+}
+
+function i18n(key)
+{
+    return game.i18n.localize(key);
 }

@@ -17,3 +17,8 @@ function Logger_Settings()
     type : Boolean
   });
 }
+
+function i18n(key)
+{
+    return game.i18n.localize(key);
+}
