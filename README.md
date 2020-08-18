@@ -9,9 +9,19 @@
 # Usage
 Once activated in the module menu, you may use the Macro syntax to send messages to other players via a dialog!
 
-WhisperDialog.newDialog(userId,contentHTML,title,skipDialogBoolean);
+Default Use
+WhisperDialog.newDialog();
+![In Action](https://i.gyazo.com/89ea3a782c46e1da89a5351e44987d6c.gif)
 
-![In Action](https://i.gyazo.com/ec196c4f3e68148ebac522c13fb06f37.gif)
+Advanced Use
+WhisperDialog.newDialog({
+  user : `USER ID TO SEND WHISPER DIALOG TO`,
+  content : `CONTENT OF THE DIALOG`,
+  title : `TITLE OF THE DIALOG`,
+  skipDialog : true/false, //will skip Client Dialog, automatically pushing information to user
+  chatWhisper : true/false //will send a whisper as well as a whisper dialog to the user, mirrors check box in Client Dialog
+});
+![In Action](https://i.gyazo.com/546475532d233ba3f4c3a08bda38c348.gif)
 
 # Support
 For questions, feature requests, or bug reports, feel free to contact me on the Foundry Discord (Kekilla#7036) or open an issue here directly.
