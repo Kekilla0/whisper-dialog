@@ -2,7 +2,10 @@ import {Logger} from './logger.js';
 
 export function newDialog(user=``,content=``, title=``, skipDialog = false, emit = true, hideButtons = false)
 {
-  if(user === `` && skipDialog && !game.users.filter(u=>u.active && u.id === user))
+  if(user === `` && skipDialog)
+    return ui.notifications.error(`${i18n("wd.dialog.nullUserError")}`);
+
+  if(user !==  `` && game.users.filter(u=>u.active && u.id === user).length === 0)
     return ui.notifications.error(`${i18n("wd.dialog.nullUserError")} : ${user}`);
 
   if(title === ``) title = `${i18n("wd.dialog.defaultTitle")}`;
@@ -43,6 +46,7 @@ export function newDialog(user=``,content=``, title=``, skipDialog = false, emit
 
         if(emit)
         {
+          if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(`${i18n("wd.dialog.notGMError")}`);
           let data = {
             user : html.find('[name=user]')[0].value,
             title : title,

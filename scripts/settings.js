@@ -3,6 +3,7 @@ import {Logger} from './logger.js';
 export function registerSettings()
 {
   Logger_Settings();
+  gmOnly_Settings();
 }
 
 function Logger_Settings()
@@ -17,6 +18,21 @@ function Logger_Settings()
     type : Boolean
   });
 }
+
+function gmOnly_Settings()
+{
+  Logger.info("Registering GM Only Setting");
+  game.settings.register('whisper-dialog','gmOnly', {
+    name : `${i18n("wd.setting.gmOnly.title")}`,
+    hint : `${i18n("wd.setting.gmOnly.hint")}`,
+    scope :"world",
+    config : true,
+    default : false,
+    type : Boolean
+  });
+}
+
+//gm only execute of macros?
 
 function i18n(key)
 {
