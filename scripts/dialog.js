@@ -79,7 +79,10 @@ export function newDialog(user=``,content=``, title=``, skipDialog = false, emit
       content : content
     }
     if(emit)
+    {
+      if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(`${i18n("wd.dialog.notGMError")}`);
       game.socket.emit(`module.whisper-dialog`, {data : data});
+    }
   }
 }
 
