@@ -126,7 +126,7 @@ export function recieveData({ user, title, content, sender } = {})
   Logger.debug("Dialog | Recieve Data | Data Check | ", user, title, content, sender);
   const fixedContent = `<h3>${content.replace(/(?:\r\n|\r|\n)/g, '<br>')}</h3>`;
 
-  if(user.includes(game.userId))
+  if(game.userId === user)
   {
     Logger.debug(`Dialog | Receive data | Conditional Statment TRUE`);
 
@@ -137,7 +137,7 @@ export function recieveData({ user, title, content, sender } = {})
     let options = {
       users : [],
       content : fixedContent, 
-      title : title,
+      title : fixedTitle,
       emit : false,
       hideButtons : true,
     }
