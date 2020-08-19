@@ -54,7 +54,14 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
     // create our select options and mark users selected if token is selected.
     const selectOptions = connectedUsers.map(({id, name, character}) => {
       // select the player automatically if their tokens are selected.
-      const selected = selectedPlayerIds.includes(character?.id) ? ' selected' : '';
+      const select = selectedPlayerIds.includes(character?.id) ? ' selected' : '';
+      // select the player automatically if their id's were passed
+      const passed = whisper.includes(character?.id) ? ' selected' : '';
+
+      //add the two together and remove duplicates
+      let selected = select.concat(passed);
+      selected = selected.filter((c,index)=> { return selected.indexOf(c) === index});
+
       return `<option value="${id}"${selected}>${name}</option>`;
     });
 
@@ -142,7 +149,7 @@ export function recieveData({title, content, whisper, speaker}= {})
   ? `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ` + title
   : `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ${i18n("wd.dialog.defaultTitle")}`;
 
-  if(whisper.includes(game.userId))
+  if(!whisper.length || whisper.includes(game.userId))
   {
     Logger.debug(`Dialog | Recieve Data | User Id Included`);
 
