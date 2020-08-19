@@ -1,61 +1,57 @@
 import {Logger} from './logger.js';
 
-export function newDialog({user =``, content=``, title=``, skipDialog=false, emit=true, hideButtons=false, chatWhisper=false} = {})
+export function newDialog({users=[], content=``, title=null, skipDialog=false, emit=true, hideButtons=false, chatWhisper=false} = {})
 {
-  if(user === `` && skipDialog)
-    return ui.notifications.error(`${i18n("wd.dialog.nullUserError")}`);
+  if(!users.length && skipDialog)
+    return ui.notifications.error(i18n("wd.dialog.nullUserError"));
 
-  if(user !== `` && game.users.filter(u=>u.active && u.id === user).length === 0)
-    return ui.notifications.error(`${i18n("wd.dialog.nullUserError")} : ${user}`);
+  if(users.length && game.users.filter(u=>u.active && users.includes(u.id)).length === 0)
+    return ui.notifications.error(`${i18n("wd.dialog.nullUserError")} : ${users}`);
 
-  if(title === ``) title = `${i18n("wd.log.name")}`;
+  title = title || i18n("wd.log.name");
 
-  let connected_users = game.users.filter(u=>u.active && u.id !== game.userId).map(u=>`${u.id}.${u.name}`);
+  const connectedUsers = game.users.filter(u => u.active && u.id !== game.userId);
+  const playerTokenIds = connectedUsers.map(u => u.character?.id).filter(id => id !== undefined);
+  const selectedPlayerIds = canvas.tokens.controlled.map(token => {
+    if (playerTokenIds.includes(token.actor.id)) return token.actor.id;
+  });
 
-  if(connected_users.length === 0) 
-    return ui.notifications.warn(`${i18n("wd.dialog.noUserError")}`);
+  if(connectedUsers.length === 0) 
+    return ui.notifications.warn(i18n("wd.dialog.noUserError"));
 
-  Logger.debug(`Dialog | Variable Check | `, user, title, content, skipDialog);
+  Logger.debug(`Dialog | Variable Check | `, users, title, content, skipDialog);
 
   if(!skipDialog)
   {
     Logger.debug(`Dialog | Inside Skip Dialog `);  
 
-    let dialog_content = ``;
-
-    let user_content = ``;
-
-    for(let u of connected_users)
-    {
-      let arr = u.split(`.`);
-      if(user === arr[0])
-      {
-        user_content += `<option value="${arr[0]}" selected>${arr[1]}</option>`;
-      }else{
-        user_content += `<option value="${arr[0]}">${arr[1]}</option>`;
-      }
-      
-    }
+    // create our select options and mark users selected if token is selected.
+    const selectOptions = connectedUsers.map(({id, name, character}) => {
+      // select the player automatically if their tokens are selected.
+      const selected = selectedPlayerIds.includes(character?.id) ? ' selected' : '';
+      return `<option value="${id}"${selected}>${name}</option>`;
+    })
 
     let checked = chatWhisper ? `checked` : ``;
     
-    dialog_content = `
-      <div class="form-group">
-        <div style="display:flex; justify-content:space-between">
-          <div>
+    const dialogContent = `
+      <div class="form-group" style="display:flex">
+        <div style="display:flex; flex-direction:column; justify-content:space-between; border-right: solid 1px grey; padding-right: 10px; margin-right: 10px">
+          <span>
             ${i18n("wd.dialog.content.chooseUser")} 
-            <select name="user">${user_content}</select>
-          </div>
-          <div>
-            <label>
-              <div style="display:inline-block;vertical-align:middle"><input type="checkbox" name="chatLog" ${checked}/></div>
-              <div style="display:inline-block;vertical-align:middle">${i18n("wd.dialog.content.chatWhisper")}</div>
-            </label>
-          </div>
+            <select name="user" multiple style="height:6em; width:100%">${selectOptions}</select>
+          </span>
+
+          <label>
+            <div style="display:inline-block;vertical-align:middle"><input type="checkbox" name="chatLog" ${checked}/></div>
+            <div style="display:inline-block;vertical-align:middle">${i18n("wd.dialog.content.chatWhisper")}</div>
+          </label>
         </div>
 
-        ${i18n("wd.dialog.content.message")} <textarea name="content" rows="5"> ${content}</textarea>
-      </div>`;
+        <div>${i18n("wd.dialog.content.message")} <textarea name="content" rows="6" style="width: 250px">${content}</textarea></div>
+      </div>
+      <br />
+    `;
 
     const senderButtons = {
       Ok : {
@@ -66,20 +62,30 @@ export function newDialog({user =``, content=``, title=``, skipDialog=false, emi
   
           if(emit)
           {
-            if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(`${i18n("wd.dialog.notGMError")}`);
-            const user = html.find('[name=user]')[0].value;
-            const content = html.find('[name=content]')[0].value;
-            let data = {
-              user : user,
-              title : title,
-              content : content,
-              sender : game.userId
+            if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(i18n("wd.dialog.notGMError"));
+
+            const { selectedOptions } = html.find('[name=user]')[0];
+            if (!selectedOptions.length) return ui.notifications.warn(i18n("wd.dialog.userRequired"));
+
+            let users = [];
+            for (let i=0; i < selectedOptions.length; i++) {
+              users.push(selectedOptions[i].value);
             }
-            game.socket.emit(`module.whisper-dialog`, data);
+
+            const content = html.find('[name=content]')[0].value;
+
+            users.map(user => {
+              let data = {
+                user,
+                title,
+                content,
+                sender: game.userId
+              }
+              game.socket.emit(`module.whisper-dialog`, data);
+            })
   
-            if (html.find('[name=chatLog]')[0].checked)
-            {
-              ChatMessage.create({ content, whisper: [user], speaker : ChatMessage.getSpeaker() });
+            if (html.find('[name=chatLog]')[0].checked) {
+              ChatMessage.create({ content, whisper: users, speaker : ChatMessage.getSpeaker() });
             }
           }              
         }
@@ -92,7 +98,7 @@ export function newDialog({user =``, content=``, title=``, skipDialog=false, emi
 
     new Dialog({
       title,
-      content : emit ? dialog_content : content,
+      content : emit ? dialogContent : content,
       buttons : hideButtons ? {} : senderButtons
     }).render(true);
 
@@ -101,13 +107,15 @@ export function newDialog({user =``, content=``, title=``, skipDialog=false, emi
 
     if(emit)
     {
-      if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(`${i18n("wd.dialog.notGMError")}`);
-      game.socket.emit(`module.whisper-dialog`, 
-      {
-        user : user,
-        title : title,
-        content : content,
-        sender : game.userId
+      if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(i18n("wd.dialog.notGMError"));
+      users.map(user => {
+        game.socket.emit(`module.whisper-dialog`, 
+        {
+          user,
+          title,
+          content,
+          sender : game.userId
+        });
       });
     }
   }
@@ -118,19 +126,16 @@ export function recieveData({ user, title, content, sender } = {})
   Logger.debug("Dialog | Recieve Data | Data Check | ", user, title, content, sender);
   const fixedContent = `<h3>${content.replace(/(?:\r\n|\r|\n)/g, '<br>')}</h3>`;
 
-  if(game.userId === user)
+  if(user.includes(game.userId))
   {
     Logger.debug(`Dialog | Receive data | Conditional Statment TRUE`);
 
-    if(title !== ``)
-    {
-      title = `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===sender)?.name} : ` + title;
-    }else{
-      title = `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===sender)?.name} : ${i18n("wd.dialog.defaultTitle")}`;
-    }
+    let fixedTitle = title
+      ? `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===sender)?.name} : ` + title
+      : `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===sender)?.name} : ${i18n("wd.dialog.defaultTitle")}`;
 
     let options = {
-      user : ``,
+      users : [],
       content : fixedContent, 
       title : title,
       emit : false,

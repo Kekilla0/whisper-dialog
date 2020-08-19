@@ -15,7 +15,7 @@ WhisperDialog.newDialog();
 ![In Action](https://i.gyazo.com/89ea3a782c46e1da89a5351e44987d6c.gif)
 
 Advanced Use
-1. user : `USER ID TO SEND WHISPER DIALOG TO`,
+1. users : `ARRAY OF USER IDS TO SEND WHISPER DIALOG TO`,
 2. content : `CONTENT OF THE DIALOG`,
 3. title : `TITLE OF THE DIALOG`,
 4. skipDialog : true/false, //will skip Client Dialog, automatically pushing information to user
