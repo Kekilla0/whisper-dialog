@@ -33,8 +33,7 @@ export function newDialog({user =``, content=``, title=``, skipDialog=false, emi
         user_content += `<option value="${arr[0]}" selected>${arr[1]}</option>`;
       }else{
         user_content += `<option value="${arr[0]}">${arr[1]}</option>`;
-      }
-      
+      } 
     }
 
     let checked = chatWhisper ? `checked` : ``;
@@ -53,7 +52,6 @@ export function newDialog({user =``, content=``, title=``, skipDialog=false, emi
             </label>
           </div>
         </div>
-
         ${i18n("wd.dialog.content.message")} <textarea name="content" rows="5"> ${content}</textarea>
       </div>`;
 
@@ -109,6 +107,11 @@ export function newDialog({user =``, content=``, title=``, skipDialog=false, emi
         content : content,
         sender : game.userId
       });
+
+      if (chatWhisper)
+      {
+        ChatMessage.create({ content, whisper: [user], speaker : ChatMessage.getSpeaker() });
+      }
     }
   }
 }
