@@ -1,13 +1,16 @@
 import {Logger} from './logger.js';
 
-export function newDialog({users=[], content=``, title=null, skipDialog=false, emit=true, hideButtons=false, chatWhisper=false} = {})
+export function newDialog({content = ``, title = ``, whisper = [], skipDialog = false, chatWhisper = false} = {})
 {
-  if(!users.length && skipDialog)
+  //Error out if no users and no opportunity to set them
+  if(!whisper.length && skipDialog)
     return ui.notifications.error(i18n("wd.dialog.nullUserError"));
 
-  if(users.length && game.users.filter(u=>u.active && users.includes(u.id)).length === 0)
+  //Error out if any of the users sent are not connected
+  if(game.users.filter(u=>u.active && whisper.includes(u.id)).length === 0 && skipDialog)
     return ui.notifications.error(`${i18n("wd.dialog.nullUserError")} : ${users}`);
 
+  //Set title variable.
   title = title || i18n("wd.log.name");
 
   const connectedUsers = game.users.filter(u => u.active && u.id !== game.userId);
@@ -16,78 +19,104 @@ export function newDialog({users=[], content=``, title=null, skipDialog=false, e
     if (playerTokenIds.includes(token.actor.id)) return token.actor.id;
   });
 
+  Logger.debug(`Dialog | Variable Check | `, content, title, whisper, skipDialog, chatWhisper, connectedUsers, playerTokenIds, selectedPlayerIds);
+
+  //Error out if no connected users
   if(connectedUsers.length === 0) 
     return ui.notifications.warn(i18n("wd.dialog.noUserError"));
 
-  Logger.debug(`Dialog | Variable Check | `, users, title, content, skipDialog);
-
-  if(!skipDialog)
+  if(skipDialog)
   {
-    Logger.debug(`Dialog | Inside Skip Dialog `);  
+    Logger.debug(`Dialog Skipped | Attempting to emit Data.`);
+
+    //Check if user has permission to emit data.
+    if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(i18n("wd.dialog.notGMError"));
+
+    let data = {
+      title,
+      content,
+      whisper,
+      speaker : game.userId
+    };
+
+    game.socket.emit(`module.whisper-dialog`, data);
+
+    Logger.debug(`Data Emitted`, data);
+
+    //Log whisper in the chatLog
+    if(chatWhisper)
+    {
+      ChatMessage.create({ content, whisper, speaker : ChatMessage.getSpeaker() });
+    }
+  }else{
+    Logger.debug(`Dialog Accessed`);
 
     // create our select options and mark users selected if token is selected.
     const selectOptions = connectedUsers.map(({id, name, character}) => {
       // select the player automatically if their tokens are selected.
       const selected = selectedPlayerIds.includes(character?.id) ? ' selected' : '';
       return `<option value="${id}"${selected}>${name}</option>`;
-    })
+    });
 
+    //check if the client already wants a chatWhisper
     let checked = chatWhisper ? `checked` : ``;
-    
+
+    //create dialogContent
     const dialogContent = `
-      <div class="form-group" style="display:flex">
-        <div style="display:flex; flex-direction:column; justify-content:space-between; border-right: solid 1px grey; padding-right: 10px; margin-right: 10px">
-          <span>
-            ${i18n("wd.dialog.content.chooseUser")} 
-            <select name="user" multiple style="height:6em; width:100%">${selectOptions}</select>
-          </span>
+    <div class="form-group" style="display:flex">
+      <div style="display:flex; flex-direction:column; justify-content:space-between; border-right: solid 1px grey; padding-right: 10px; margin-right: 10px">
+        <span>
+          ${i18n("wd.dialog.content.chooseUser")} 
+          <select name="user" multiple style="height:6em; width:100%">${selectOptions}</select>
+        </span>
 
-          <label>
-            <div style="display:inline-block;vertical-align:middle"><input type="checkbox" name="chatLog" ${checked}/></div>
-            <div style="display:inline-block;vertical-align:middle">${i18n("wd.dialog.content.chatWhisper")}</div>
-          </label>
-        </div>
-
-        <div>${i18n("wd.dialog.content.message")} <textarea name="content" rows="6" style="width: 250px">${content}</textarea></div>
+        <label>
+          <div style="display:inline-block;vertical-align:middle"><input type="checkbox" name="chatLog" ${checked}/></div>
+          <div style="display:inline-block;vertical-align:middle">${i18n("wd.dialog.content.chatWhisper")}</div>
+        </label>
       </div>
-      <br />
+
+      <div>${i18n("wd.dialog.content.message")} <textarea name="content" rows="6" style="width: 250px">${content}</textarea></div>
+    </div>
+    <br />
     `;
 
+    //create buttons
     const senderButtons = {
       Ok : {
         icon : `<i class="fas fa-check"></i>`,
         label : `${i18n("wd.dialog.button.ok")}`,
         callback : (html) => { 
-          Logger.debug(html);
-  
-          if(emit)
-          {
-            if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(i18n("wd.dialog.notGMError"));
+          Logger.debug("Dialog | Callback html | ", html);
+          
+          //Check if user has permission to emit data.
+          if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(i18n("wd.dialog.notGMError"));
 
-            const { selectedOptions } = html.find('[name=user]')[0];
-            if (!selectedOptions.length) return ui.notifications.warn(i18n("wd.dialog.userRequired"));
+          //get selected users from the dialog
+          const { selectedOptions } = html.find('[name=user]')[0];
+          if (!selectedOptions.length) return ui.notifications.warn(i18n("wd.dialog.userRequired"));
 
-            let users = [];
-            for (let i=0; i < selectedOptions.length; i++) {
-              users.push(selectedOptions[i].value);
-            }
+          let users = [];
+          for (let i=0; i < selectedOptions.length; i++) {
+            users.push(selectedOptions[i].value);
+          }
 
-            const content = html.find('[name=content]')[0].value;
+          const html_content = html.find('[name=content]')[0].value;
 
-            users.map(user => {
-              let data = {
-                user,
-                title,
-                content,
-                sender: game.userId
-              }
-              game.socket.emit(`module.whisper-dialog`, data);
-            })
-  
-            if (html.find('[name=chatLog]')[0].checked) {
-              ChatMessage.create({ content, whisper: users, speaker : ChatMessage.getSpeaker() });
-            }
-          }              
+          let data = {
+            title,
+            content : html_content,
+            whisper : users,
+            speaker : game.userId
+          }
+
+          game.socket.emit(`module.whisper-dialog`, data);
+
+          Logger.debug(`Data Emitted`, data);
+
+          if (html.find('[name=chatLog]')[0].checked) {
+            ChatMessage.create({ flavor : title, content : html_content, whisper: users, speaker : ChatMessage.getSpeaker() });
+          }
         }
       },
       Cancel : {
@@ -98,56 +127,30 @@ export function newDialog({users=[], content=``, title=null, skipDialog=false, e
 
     new Dialog({
       title,
-      content : emit ? dialogContent : content,
-      buttons : hideButtons ? {} : senderButtons
+      content : dialogContent,
+      buttons : senderButtons
     }).render(true);
-
-  }else{
-    Logger.debug(`Dialog | Else side of Skip Dialog`);
-
-    if(emit)
-    {
-      if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(i18n("wd.dialog.notGMError"));
-      users.map(user => {
-        game.socket.emit(`module.whisper-dialog`, 
-        {
-          user,
-          title,
-          content,
-          sender : game.userId
-        });
-      });
-
-      if (chatWhisper)
-      {
-        ChatMessage.create({ content, whisper: [user], speaker : ChatMessage.getSpeaker() });
-      }
-    }
   }
 }
 
-export function recieveData({ user, title, content, sender } = {})
+export function recieveData({title, content, whisper, speaker}= {})
 {
-  Logger.debug("Dialog | Recieve Data | Data Check | ", user, title, content, sender);
+  Logger.debug("Dialog | Recieve Data | Data Check ", title, content, whisper, speaker);
+
   const fixedContent = `<h3>${content.replace(/(?:\r\n|\r|\n)/g, '<br>')}</h3>`;
+  const fixedTitle = title
+  ? `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ` + title
+  : `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ${i18n("wd.dialog.defaultTitle")}`;
 
-  if(game.userId === user)
+  if(whisper.includes(game.userId))
   {
-    Logger.debug(`Dialog | Receive data | Conditional Statment TRUE`);
+    Logger.debug(`Dialog | Recieve Data | User Id Included`);
 
-    let fixedTitle = title
-      ? `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===sender)?.name} : ` + title
-      : `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===sender)?.name} : ${i18n("wd.dialog.defaultTitle")}`;
-
-    let options = {
-      users : [],
-      content : fixedContent, 
+    new Dialog({
       title : fixedTitle,
-      emit : false,
-      hideButtons : true,
-    }
-
-    newDialog(options);
+      content : fixedContent,
+      buttons : {}
+    }).render(true);
   }
 }
 

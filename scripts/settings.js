@@ -32,8 +32,6 @@ function gmOnly_Settings()
   });
 }
 
-//gm only execute of macros?
-
 function i18n(key)
 {
     return game.i18n.localize(key);
