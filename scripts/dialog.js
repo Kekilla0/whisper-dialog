@@ -2,7 +2,7 @@ import {Logger} from './logger.js';
 
 export function newDialog({content = ``, title = ``, whisper = [], skipDialog = false, chatWhisper = false} = {})
 {
-  //Error out if no users and no opportunity to set them
+  //Error out if no users and no opportunity to set them (mabye set all available userIds to this now?)
   if(!whisper.length && skipDialog)
     return ui.notifications.error(i18n("wd.dialog.nullUserError"));
 
@@ -53,17 +53,16 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
 
     // create our select options and mark users selected if token is selected.
     const selectOptions = connectedUsers.map(({id, name, character}) => {
-      // select the player automatically if their tokens are selected.
-      const select = selectedPlayerIds.includes(character?.id) ? ' selected' : '';
-      // select the player automatically if their id's were passed
-      const passed = whisper.includes(character?.id) ? ' selected' : '';
-
-      //add the two together and remove duplicates
-      let selected = select.concat(passed);
-      selected = selected.filter((c,index)=> { return selected.indexOf(c) === index});
-
+      const selected = selectedPlayerIds.includes(character?.id) ? ' selected' : '';
       return `<option value="${id}"${selected}>${name}</option>`;
     });
+    // create our whisper options and mark users if still connected
+    const whisperOptions = connectedUsers.map(({id,name,character})=>{
+      const whispered = whisper.includes(id) ? ` selected` : ``;
+      return `<option value="${id}"${whispered}>${name}</option>`;
+    });
+
+    let selectedOption = whisper.length > 0 ? whisperOptions : selectOptions;
 
     //check if the client already wants a chatWhisper
     let checked = chatWhisper ? `checked` : ``;
@@ -74,7 +73,7 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
       <div style="display:flex; flex-direction:column; justify-content:space-between; border-right: solid 1px grey; padding-right: 10px; margin-right: 10px">
         <span>
           ${i18n("wd.dialog.content.chooseUser")} 
-          <select name="user" multiple style="height:6em; width:100%">${selectOptions}</select>
+          <select name="user" multiple style="height:6em; width:100%">${selectedOption}</select>
         </span>
 
         <label>
@@ -102,6 +101,8 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
           //get selected users from the dialog
           const { selectedOptions } = html.find('[name=user]')[0];
           if (!selectedOptions.length) return ui.notifications.warn(i18n("wd.dialog.userRequired"));
+
+          //here is where we could default to "every user since none were chosen"
 
           let users = [];
           for (let i=0; i < selectedOptions.length; i++) {
@@ -146,8 +147,8 @@ export function recieveData({title, content, whisper, speaker}= {})
 
   const fixedContent = `<h3>${content.replace(/(?:\r\n|\r|\n)/g, '<br>')}</h3>`;
   const fixedTitle = title
-  ? `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ` + title
-  : `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ${i18n("wd.dialog.defaultTitle")}`;
+    ? `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ` + title
+    : `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ${i18n("wd.dialog.defaultTitle")}`;
 
   if(!whisper.length || whisper.includes(game.userId))
   {
