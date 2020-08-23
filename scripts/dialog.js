@@ -4,7 +4,7 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
 {
   //Error out if no users and no opportunity to set them (mabye set all available userIds to this now?)
   if(!whisper.length && skipDialog)
-    return ui.notifications.error(i18n("wd.dialog.nullUserError"));
+    whisper = game.users.filter(u=>u.active && u.id !== game.userId);
 
   //Error out if any of the users sent are not connected
   if(game.users.filter(u=>u.active && whisper.includes(u.id)).length === 0 && skipDialog)
