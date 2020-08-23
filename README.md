@@ -20,6 +20,7 @@ Advanced Use
 3. whisper : Array of Users to send the message to
 4. skipDialog : true/false, //will skip Client Dialog, automatically pushing information to user
 5. chatWhisper : true/false //will send a whisper as well as a whisper dialog to the user, mirrors check box in Client Dialog
+Extra : if whisper is left blank and skipDialog is true, will fill whisper array with all available users. 
 
 ![In Action](https://i.gyazo.com/546475532d233ba3f4c3a08bda38c348.gif)
 
