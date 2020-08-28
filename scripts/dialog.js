@@ -2,9 +2,9 @@ import {Logger} from './logger.js';
 
 export function newDialog({content = ``, title = ``, whisper = [], skipDialog = false, chatWhisper = false} = {})
 {
-  //Error out if no users and no opportunity to set them
+  //Error out if no users and no opportunity to set them (mabye set all available userIds to this now?)
   if(!whisper.length && skipDialog)
-    return ui.notifications.error(i18n("wd.dialog.nullUserError"));
+    whisper = game.users.filter(u=>u.active && u.id !== game.userId);
 
   //Error out if any of the users sent are not connected
   if(game.users.filter(u=>u.active && whisper.includes(u.id)).length === 0 && skipDialog)
@@ -51,18 +51,15 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
   }else{
     Logger.debug(`Dialog Accessed`);
 
-    // create our select options and mark users selected if token is selected.
-    const selectOptions = connectedUsers.map(({id, name, character}) => {
-      // select the player automatically if their tokens are selected.
-      const select = selectedPlayerIds.includes(character?.id) ? ' selected' : '';
-      // select the player automatically if their id's were passed
-      const passed = whisper.includes(character?.id) ? ' selected' : '';
-
-      //add the two together and remove duplicates
-      let selected = select.concat(passed);
-      selected = selected.filter((c,index)=> { return selected.indexOf(c) === index});
-
-      return `<option value="${id}"${selected}>${name}</option>`;
+    // use whisper. If that is empty, use selectedPlayerIds;
+    let checkedUsersArray = whisper.length ? whisper : selectedPlayerIds;
+    // create our select options and mark users checked if token is checked.
+    const checkboxList = connectedUsers.map(({id, name, character}) => {
+      const checked = checkedUsersArray.includes(character?.id) ? 'checked' : '';
+      return `<div><label>
+        <div style="display:inline-block;vertical-align:middle"><input type="checkbox" name="${id}" ${checked}></div>
+        <div style="display:inline-block;vertical-align:middle">${name}</div>
+      </label></div>`;
     });
 
     //check if the client already wants a chatWhisper
@@ -72,12 +69,12 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
     const dialogContent = `
     <div class="form-group" style="display:flex">
       <div style="display:flex; flex-direction:column; justify-content:space-between; border-right: solid 1px grey; padding-right: 10px; margin-right: 10px">
-        <span>
-          ${i18n("wd.dialog.content.chooseUser")} 
-          <select name="user" multiple style="height:6em; width:100%">${selectOptions}</select>
+        <span style="border-bottom: dashed 1px grey">
+          <div style="white-space: nowrap">${i18n("wd.dialog.content.chooseUser")}</div>
+          <div style="min-height:6em; width:100%;">${checkboxList.join(' ')}</div>
         </span>
 
-        <label>
+        <label style="white-space: nowrap">
           <div style="display:inline-block;vertical-align:middle"><input type="checkbox" name="chatLog" ${checked}/></div>
           <div style="display:inline-block;vertical-align:middle">${i18n("wd.dialog.content.chatWhisper")}</div>
         </label>
@@ -100,12 +97,12 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
           if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(i18n("wd.dialog.notGMError"));
 
           //get selected users from the dialog
-          const { selectedOptions } = html.find('[name=user]')[0];
-          if (!selectedOptions.length) return ui.notifications.warn(i18n("wd.dialog.userRequired"));
+          let users = connectedUsers.filter((user) => html.find(`[name="${user.id}"]`)[0].checked);
 
-          let users = [];
-          for (let i=0; i < selectedOptions.length; i++) {
-            users.push(selectedOptions[i].value);
+          //here is where we could default to "every user since none were chosen"
+          if (!users?.length) {
+            ui.notifications.warn(i18n("wd.dialog.sendingToAll"));
+            users = connectedUsers;
           }
 
           const html_content = html.find('[name=content]')[0].value;
@@ -113,7 +110,7 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
           let data = {
             title,
             content : html_content,
-            whisper : users,
+            whisper : users.map(({id}) => id),
             speaker : game.userId
           }
 
@@ -146,8 +143,8 @@ export function recieveData({title, content, whisper, speaker}= {})
 
   const fixedContent = `<h3>${content.replace(/(?:\r\n|\r|\n)/g, '<br>')}</h3>`;
   const fixedTitle = title
-  ? `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ` + title
-  : `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ${i18n("wd.dialog.defaultTitle")}`;
+    ? `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ` + title
+    : `${i18n("wd.dialog.recieve.sentFrom")} ${game.users.find(u=>u.id===speaker)?.name} : ${i18n("wd.dialog.defaultTitle")}`;
 
   if(!whisper.length || whisper.includes(game.userId))
   {
