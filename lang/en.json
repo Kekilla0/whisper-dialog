@@ -8,7 +8,7 @@
   "wd.dialog.nullUserError" : "Cannot send dialog to null user",
   "wd.dialog.noUserError" : "No other user is connected.",
   "wd.dialog.notGMError" : "This module is restricted to GM use only.",
-  "wd.dialog.userRequired" : "You must select at least 1 user.",
+  "wd.dialog.sendingToAll" : "Sent to all users.",
 
   "wd.dialog.defaultTitle" : "For your eyes only.",
 

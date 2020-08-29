@@ -51,10 +51,15 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
   }else{
     Logger.debug(`Dialog Accessed`);
 
-    // create our select options and mark users selected if token is selected.
-    const selectOptions = connectedUsers.map(({id, name, character}) => {
-      const selected = selectedPlayerIds.includes(character?.id) ? ' selected' : '';
-      return `<option value="${id}"${selected}>${name}</option>`;
+    // use whisper. If that is empty, use selectedPlayerIds;
+    let checkedUsersArray = whisper.length ? whisper : selectedPlayerIds;
+    // create our select options and mark users checked if token is checked.
+    const checkboxList = connectedUsers.map(({id, name, character}) => {
+      const checked = checkedUsersArray.includes(character?.id) ? 'checked' : '';
+      return `<div><label>
+        <div style="display:inline-block;vertical-align:middle"><input type="checkbox" name="${id}" ${checked}></div>
+        <div style="display:inline-block;vertical-align:middle">${name}</div>
+      </label></div>`;
     });
     // create our whisper options and mark users if still connected
     const whisperOptions = connectedUsers.map(({id,name,character})=>{
@@ -71,12 +76,12 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
     const dialogContent = `
     <div class="form-group" style="display:flex">
       <div style="display:flex; flex-direction:column; justify-content:space-between; border-right: solid 1px grey; padding-right: 10px; margin-right: 10px">
-        <span>
-          ${i18n("wd.dialog.content.chooseUser")} 
-          <select name="user" multiple style="height:6em; width:100%">${selectedOption}</select>
+        <span style="border-bottom: dashed 1px grey">
+          <div style="white-space: nowrap">${i18n("wd.dialog.content.chooseUser")}</div>
+          <div style="min-height:6em; width:100%;">${checkboxList.join(' ')}</div>
         </span>
 
-        <label>
+        <label style="white-space: nowrap">
           <div style="display:inline-block;vertical-align:middle"><input type="checkbox" name="chatLog" ${checked}/></div>
           <div style="display:inline-block;vertical-align:middle">${i18n("wd.dialog.content.chatWhisper")}</div>
         </label>
@@ -99,14 +104,12 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
           if(game.settings.get(`whisper-dialog`,`gmOnly`) && !game.user.isGM) return ui.notifications.warn(i18n("wd.dialog.notGMError"));
 
           //get selected users from the dialog
-          const { selectedOptions } = html.find('[name=user]')[0];
-          if (!selectedOptions.length) return ui.notifications.warn(i18n("wd.dialog.userRequired"));
+          let users = connectedUsers.filter((user) => html.find(`[name="${user.id}"]`)[0].checked);
 
           //here is where we could default to "every user since none were chosen"
-
-          let users = [];
-          for (let i=0; i < selectedOptions.length; i++) {
-            users.push(selectedOptions[i].value);
+          if (!users?.length) {
+            ui.notifications.warn(i18n("wd.dialog.sendingToAll"));
+            users = connectedUsers;
           }
 
           const html_content = html.find('[name=content]')[0].value;
@@ -114,7 +117,7 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
           let data = {
             title,
             content : html_content,
-            whisper : users,
+            whisper : users.map(({id}) => id),
             speaker : game.userId
           }
 
