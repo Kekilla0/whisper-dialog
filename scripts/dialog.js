@@ -67,8 +67,6 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
       return `<option value="${id}"${whispered}>${name}</option>`;
     });
 
-    //let selectedOption = whisper.length > 0 ? whisperOptions : selectOptions;
-
     //check if the client already wants a chatWhisper
     let checked = chatWhisper ? `checked` : ``;
 
