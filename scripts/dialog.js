@@ -172,6 +172,6 @@ function i18n(key)
 
 function embedUrls(content)
 {
-  const imageRegex = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/g;
+  const imageRegex = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|webp)/g;
   return content.replace(imageRegex, match => `<img class="whisper-image" height="auto" width="auto" src='${match}' />`);
 }
