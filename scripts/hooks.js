@@ -2,6 +2,7 @@ import {Logger} from './logger.js';
 
 import * as settings from './settings.js';
 import * as dialog from './dialog.js';
+import * as sidebar from './sidebar.js';
 
 Hooks.on('init', ()=>{
   Logger.info("Registering All Settings.");
@@ -20,4 +21,5 @@ Hooks.on('ready', ()=>{
   game.socket.on('module.whisper-dialog', async (data) =>{
     dialog.recieveData(data);
   });
+  setTimeout(sidebar.renderWhisperIcon(), 1000);
 });

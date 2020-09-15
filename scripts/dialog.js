@@ -110,11 +110,11 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
             users = connectedUsers;
           }
 
-          const html_content = html.find('[name=content]')[0].value;
+          const content = embedUrls(html.find('[name=content]')[0]?.value);
 
           let data = {
             title,
-            content : html_content,
+            content,
             whisper : users.map(({id}) => id),
             speaker : game.userId
           }
@@ -124,7 +124,7 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
           Logger.debug(`Data Emitted`, data);
 
           if (html.find('[name=chatLog]')[0].checked) {
-            ChatMessage.create({ flavor : title, content : html_content, whisper: users, speaker : ChatMessage.getSpeaker() });
+            ChatMessage.create({ flavor : title, content, whisper: users, speaker : ChatMessage.getSpeaker() });
           }
         }
       },
@@ -160,10 +160,18 @@ export function recieveData({title, content, whisper, speaker}= {})
       content : fixedContent,
       buttons : {}
     }).render(true);
+
+
   }
 }
 
 function i18n(key)
 {
     return game.i18n.localize(key);
+}
+
+function embedUrls(content)
+{
+  const imageRegex = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|webp)/g;
+  return content.replace(imageRegex, match => `<img class="whisper-image" height="auto" width="auto" src='${match}' />`);
 }
