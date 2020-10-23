@@ -1,0 +1,23 @@
+{
+  "wd.log.name" : "Diálogo de Susurro",
+  "wd.log.debug" : "DEPURAR",
+
+  "wd.setting.gmOnly.title" : "Acceso Exclusivo del GM",
+  "wd.setting.gmOnly.hint" : "Restringe el acceso a las cuentas del gm para prevenir el uso malicioso.",
+
+  "wd.dialog.nullUserError" : "Imposible enviar diálogo a usuario vacío",
+  "wd.dialog.noUserError" : "No hay ningún otro usuario conectado.",
+  "wd.dialog.notGMError" : "Restringido el uso de este módulo al GM únicamente.",
+  "wd.dialog.sendingToAll" : "Enviar a todos los usuarios.",
+
+  "wd.dialog.defaultTitle" : "Solo lo verás tú.",
+
+  "wd.dialog.content.chooseUser" : "Usuarios de Susurros:",
+  "wd.dialog.content.chatWhisper" : "Guardar el registro en los mensajes",
+  "wd.dialog.content.message" : "Mensaje:",
+
+  "wd.dialog.button.ok" : "Ok",
+  "wd.dialog.button.cancel" : "Cancelar",
+
+  "wd.dialog.recieve.sentFrom" : "De"
+}
