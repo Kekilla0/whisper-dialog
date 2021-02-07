@@ -85,7 +85,7 @@ export function newDialog({content = ``, title = ``, whisper = [], skipDialog = 
         </label>
       </div>
 
-      <div>${i18n("wd.dialog.content.message")} <textarea name="content" rows="6" style="width: 250px">${content}</textarea></div>
+      <div>${i18n("wd.dialog.content.message")} <textarea name="content" rows="6" style="width: 100%">${content}</textarea></div>
     </div>
     <br />
     `;
