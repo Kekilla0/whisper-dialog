@@ -6,6 +6,6 @@ export function renderWhisperIcon() {
             <i class="fas fa-user-secret"></i>
     </a>
     `);
-    jQuery("#chat-controls label").before(lang_html);
+    jQuery("#chat-controls label:first").before(lang_html);
     jQuery("a.whisper-dialog").click(() => dialog.newDialog());
 }
