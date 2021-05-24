@@ -1,0 +1,40 @@
+<!--Whisper Dialog Content Div-->
+<div class="form-group">
+  <!--User ID Div-->
+  <div class="user-id-form">
+    <label class="whisper">
+      <div class="input"><input type="checkbox" name="whisper"/></div> <!-- Variable : toChat -->
+      <div class="label">{{{localize "wd.dialog.content.chatWhisper"}}}</div> <!--Localize Chat Message Label-->
+    </label>
+    <span class="user-list">
+      <div class="label">{{{localize "wd.dialog.content.chooseUser"}}}</div> <!--Localize chooseUser Label-->
+      <div class="list">
+        <!--Loop => Variable : User Names / IDs -->
+        {{log this}}
+        {{#each users}}
+          <div class="user">
+            <div class="input">
+              <input type="checkbox" name="user" id="{{{this.id}}}" {{{this.checked}}}/> <!-- Variable : whisper -->
+            </div> 
+            <div class="label">
+              {{{this.name}}} <!--User Name-->
+            </div> 
+          </div>
+        {{/each}}
+      </div>
+    </span>
+  </div>
+  <!--Text Input Div-->
+  <div class="user-input-form">
+    <label class="label"> {{{localize "wd.dialog.content.message"}}}</label> <!--Localize Message Label-->
+    <textarea class="textarea" name="content">{{ content }}</textarea>
+  </div>
+</div>
+<div class="dialog-buttons">
+  {{#each buttons as |button id|}}
+    <button class="dialog-button {{cssClass}}" data-button="{{id}}">
+      {{{button.icon}}}
+      {{{button.label}}}
+    </button>
+  {{/each}}
+</div>

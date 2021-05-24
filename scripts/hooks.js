@@ -1,25 +1,14 @@
-import {Logger} from './logger.js';
+import { logger } from './logger.js';
+import { settings } from './settings.js';
+import { WhisperDialog } from './WhisperDialog.js';
 
-import * as settings from './settings.js';
-import * as dialog from './dialog.js';
-import * as sidebar from './sidebar.js';
 
-Hooks.on('init', ()=>{
-  Logger.info("Registering All Settings.");
-  settings.registerSettings();
-});
+logger.info(`Initializing Module`);
+Hooks.on('init', settings.register);
+Hooks.on('setup', WhisperDialog.register);
+Hooks.on('ready', WhisperDialog.renderWhisperIcon);
 
-Hooks.on('setup', ()=>{
-  Logger.info("Registering Window Extention");
-  window.WhisperDialog = {
-    newDialog : dialog.newDialog
-  };
-})
 
-Hooks.on('ready', ()=>{
-  Logger.info("Registering Socket");
-  game.socket.on('module.whisper-dialog', async (data) =>{
-    dialog.recieveData(data);
-  });
-  setTimeout(sidebar.renderWhisperIcon(), 1000);
-});
+/*
+  Slight re-write of the module
+*/

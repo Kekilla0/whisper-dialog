@@ -1,0 +1,105 @@
+/*
+  Form Group
+*/
+.WhisperDialog .form-group {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  border-bottom: solid 1px grey;
+}
+
+/*
+  Whisper/ID Div
+*/
+.WhisperDialog .user-id-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: solid 1px grey;
+  padding-right: 10px;
+  margin-right: 10px;
+  width: 40%;
+}
+/*
+  Chat Message Label
+*/
+.WhisperDialog .user-id-form .whisper {
+  border-bottom: dashed 1px grey;
+  width: 100%;
+}
+.WhisperDialog .user-id-form .whisper .input {
+  display: inline;
+  vertical-align: middle;
+}
+.WhisperDialog .user-id-form .whisper .label {
+  display: inline;
+  vertical-align: middle;
+}
+/*
+  User Whisper Span
+*/
+.WhisperDialog .user-id-form .user-list {
+  display: flex;
+  align-content: flex-start;
+  flex-wrap: nowrap;
+  flex-shrink: 1;
+  flex-direction: column;
+}
+.WhisperDialog .user-id.form .user-list .label {
+  white-space: nowrap;
+}
+.WhisperDialog .user-id-form .user-list .list {
+  display: flex;
+  flex-direction: column;
+  min-height: 6em;
+  width: 100%;
+}
+.WhisperDialog .user-id.form .user-list .list .user {
+  display: flex;
+  flex-direction: row;
+  align-content: flex-start;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+.WhisperDialog .user-id-form .user-list .list .user .input {
+  display: inline;
+  vertical-align: middle;
+}
+.WhisperDialog .user-id-form .user-list .list .user .label {
+  display: inline;
+  vertical-align: middle;
+}
+
+/*
+  Text Area Div
+*/
+.WhisperDialog .user-input-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+.WhisperDialog .user-input-form .label {
+  width: 100%;
+  text-align: left;
+}
+.WhisperDialog .user-input-form .textarea {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+/*
+  Buttons
+*/
+.WhisperDialog .dialog-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 10px;
+}

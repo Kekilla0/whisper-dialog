@@ -1,15 +1,17 @@
-export class Logger {
+import { settings } from './settings.js';
+
+export class logger {
   static info(...args) {
-      console.log(`${i18n("wd.log.name")} | `, ...args);
+    console.log(`${settings.TITLE} | `, ...args);
   }
 
   static debug(...args) {
-      if (game.settings.get('whisper-dialog', 'debug'))
-          Logger.info(`${i18n("wd.log.name")} | `, ...args);
+    if (settings.value('debug'))
+      logger.info("DEBUG | ", ...args);
   }
-}
 
-function i18n(key)
-{
-    return game.i18n.localize(key);
+  static error(...args){
+    logger.info("ERROR | ", ...args);
+    ui.notifications.error(`Error `, ...args);
+  }
 }
