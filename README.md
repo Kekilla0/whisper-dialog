@@ -17,14 +17,17 @@ Alternate Use : new WhisperDialog(data, options);
 
 ![In Action](https://i.gyazo.com/caa64884618a336a759f2e7bf292e5e8.gif)
 
-Advanced Use
-=> Data
+# Advanced Use
+
+Data :
 
 1. content : `CONTENT OF THE DIALOG`,
 2. users : Array of Users to send the message to
-   => Options
-3. skipDialog : true/false, will skip Client Dialog, automatically pushing information to user
-4. chatWhisper : true/false will send a whisper as well as a whisper dialog to the user, mirrors check box in Client Dialog
+
+Options :
+
+1. skipDialog : true/false, will skip Client Dialog, automatically pushing information to user
+2. chatWhisper : true/false will send a whisper as well as a whisper dialog to the user, mirrors check box in Client Dialog
 
 Extra
 If whisper is left blank and skipDialog is true, will fill whisper array with all available users.
