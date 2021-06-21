@@ -12,6 +12,6 @@ export class logger {
 
   static error(...args){
     logger.info("ERROR | ", ...args);
-    ui.notifications.error(`Error `, ...args);
+    ui.notifications.error(`Error : ${args.join(` `)}`);
   }
 }

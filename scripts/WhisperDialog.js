@@ -39,8 +39,8 @@ export class WhisperDialog extends Dialog{
     this.options.skipDialog = !!options?.skipDialog;
     this.options.chatWhisper = !!options?.chatWhisper;
 
-    if(this.data.users.length === 0) return logger.error(settings.value("wd.dialog.noUserError"));
-    if(settings.value("gmOnly") && !game.user.isGM) return logger.error(setting.i18n("wd.dialog.notGMError"));
+    if(this.data.users.length === 0) return logger.error(settings.i18n("wd.dialog.noUserError"));
+    if(settings.value("gmOnly") && !game.user.isGM) return logger.error(settings.i18n("wd.dialog.notGMError"));
 
     /*
       Emit Data or Display Dialog
