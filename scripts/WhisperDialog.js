@@ -164,15 +164,19 @@ export class WhisperDialog extends Dialog{
     logger.debug("Data Emitted");
   }
 
-  static renderWhisperIcon(){
-    if(!settings.value("icon") || (settings.value("gmOnly") && !game.user.isGM)) return;
+  static renderWhisperIcon(app, HTML, options){
+    if(!settings.value("icon") || (settings.value("gmOnly") && !game.user.isGM) || (app.id !== "chat" && app.id !== "chat-popout")) return;
+
+    logger.info("Registering Whisper Icon");
 
     let element = $(`    
-    <a class="chat-control-icon whisper-dialog" title="whisper selected players" style="margin-right: 7px">
+    <a class="chat-control-icon whisper-dialog" title="whisper selected players" id ="${app.id}-whisper-dialog" style="margin-right: 7px">
       <i class="fas fa-user-secret"></i>
     </a>`);
 
-    $("#chat-controls label:first").before(element);
-    $("a.whisper-dialog").click(() => new WhisperDialog({},{}));
+    HTML.find('#chat-controls label:first').before(element);
+
+    /* check if WhisperDialog is Open first */
+    $(`#${app.id}-whisper-dialog`).click(()=> new WhisperDialog({},{}));
   }
 }
