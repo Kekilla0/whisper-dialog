@@ -9,5 +9,15 @@ Hooks.on('renderSidebarTab', WhisperDialog.renderWhisperIcon);
 
 
 /*
-  Slight re-write of the module
+  ! Known Issues :
+  
+  ? Fixes :
+ 
+  TODO :
+    Update JSON
+    Fix any Compatibility Issues
+    Add Hotkey support (? Possibly ?)
+
+  * Update Notes : 
+
 */
